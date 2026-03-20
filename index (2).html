@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>工場在庫管理</title>
+<script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:Arial,sans-serif;background:#f0f4f8;color:#1a202c;font-size:15px;max-width:520px;margin:0 auto}
+.hdr{background:#1F4E79;color:#fff;padding:12px 16px;display:flex;align-items:center;gap:10px}
+.hdr h1{font-size:17px;font-weight:700;flex:1}
+.hdr-date{font-size:11px;opacity:.7}
+.tabs{display:flex;background:#fff;border-bottom:2px solid #e2e8f0;overflow-x:auto}
+.tab{flex:1;padding:10px 2px;text-align:center;font-size:11px;font-weight:700;color:#718096;cursor:pointer;border:none;background:none;white-space:nowrap;min-width:52px}
+.tab.active{color:#1F4E79;border-bottom:3px solid #1F4E79;margin-bottom:-2px}
+.page{display:none;padding:12px}
+.page.active{display:block}
+.card{background:#fff;border-radius:10px;padding:14px;margin-bottom:12px;border:1px solid #e2e8f0}
+.card h2{font-size:14px;color:#2d3748;margin-bottom:10px;font-weight:700}
+label{display:block;font-size:12px;color:#718096;margin-bottom:4px;margin-top:10px;font-weight:600}
+input,select{width:100%;padding:9px 12px;border:1.5px solid #cbd5e0;border-radius:8px;font-size:14px;color:#2d3748;background:#fff}
+input:focus,select:focus{outline:none;border-color:#1F4E79}
+.btn{width:100%;padding:12px;border:none;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;margin-top:8px}
+.btn-blue{background:#1F4E79;color:#fff}
+.btn-green{background:#276749;color:#fff}
+.btn-orange{background:#C05621;color:#fff}
+.btn-gray{background:#EDF2F7;color:#4A5568}
+.btn-red{background:#9B2C2C;color:#fff}
+.btn-sm{padding:5px 10px;font-size:11px;width:auto;border-radius:6px;font-weight:700;border:none;cursor:pointer}
+.badge{display:inline-block;padding:2px 7px;border-radius:10px;font-size:10px;font-weight:700}
+.bg-g{background:#C6F6D5;color:#276749}
+.bg-r{background:#FED7D7;color:#9B2C2C}
+.bg-b{background:#BEE3F8;color:#2B6CB0}
+.bg-y{background:#FEFCBF;color:#744210}
+.bg-p{background:#E9D8FD;color:#553C9A}
+.bg-gray{background:#EDF2F7;color:#4A5568}
+.item-card{background:#fff;border-radius:8px;padding:10px 12px;margin-bottom:6px;border:1px solid #e2e8f0}
+.item-name{font-weight:700;font-size:13px}
+.item-loc{font-size:11px;color:#4A5568;margin-top:2px}
+.item-meta{font-size:10px;color:#a0aec0;margin-top:2px}
+.item-actions{display:flex;gap:5px;margin-top:7px;flex-wrap:wrap}
+.result-box{padding:10px 12px;border-radius:8px;margin:6px 0;font-size:13px;line-height:1.6}
+.result-blue{background:#EBF8FF;border:1.5px solid #90CDF4}
+.result-green{background:#F0FFF4;border:1.5px solid #9AE6B4}
+.msg{padding:10px 12px;border-radius:8px;margin:6px 0;font-size:13px;font-weight:700}
+.msg-ok{background:#C6F6D5;color:#276749}
+.msg-err{background:#FED7D7;color:#9B2C2C}
+.stat-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:12px}
+.stat-card{background:#fff;border-radius:10px;padding:10px 6px;border:1px solid #e2e8f0;text-align:center}
+.stat-num{font-size:20px;font-weight:700;color:#1F4E79}
+.stat-label{font-size:10px;color:#718096;margin-top:2px}
+.qr-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.qr-card{background:#fff;border-radius:8px;padding:8px;border:1px solid #e2e8f0;text-align:center}
+.qr-card p{font-size:10px;color:#4A5568;margin-top:4px;font-weight:700;word-break:break-all;line-height:1.3}
+.drop-zone{border:2px dashed #90CDF4;border-radius:10px;padding:20px;text-align:center;background:#EBF8FF;cursor:pointer;margin:8px 0}
+.drop-zone:hover{background:#BEE3F8}
+.drop-title{font-size:14px;font-weight:700;color:#2B6CB0;margin-bottom:4px}
+.drop-sub{font-size:11px;color:#4A5568}
+.filter-bar{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:8px}
+.f-btn{padding:4px 10px;font-size:11px;border-radius:10px;border:1px solid #cbd5e0;background:#fff;cursor:pointer;font-weight:700;color:#4A5568}
+.f-btn.on{background:#1F4E79;color:#fff;border-color:#1F4E79}
+.type-badge{font-size:10px;padding:1px 6px;border-radius:8px;font-weight:700}
+</style>
+</head>
+<body>
+<div class="hdr">
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+  <h1>工場在庫管理</h1>
+  <span class="hdr-date" id="hdr-date"></span>
+</div>
+<div class="tabs">
+  <button class="tab active" onclick="showPage('home',this)">ホーム</button>
+  <button class="tab" onclick="showPage('scan',this)">場所登録</button>
+  <button class="tab" onclick="showPage('list',this)">一覧</button>
+  <button class="tab" onclick="showPage('qrgen',this)">QR作成</button>
+  <button class="tab" onclick="showPage('settings',this)">設定</button>
+</div>
+
+<!-- ホーム -->
+<div id="page-home" class="page active">
+  <div class="stat-grid">
+    <div class="stat-card"><div class="stat-num" id="s-items">0</div><div class="stat-label">物品数</div></div>
+    <div class="stat-card"><div class="stat-num" id="s-locs">0</div><div class="stat-label">場所数</div></div>
+    <div class="stat-card"><div class="stat-num" id="s-low" style="color:#C05621">0</div><div class="stat-label">在庫ゼロ</div></div>
+  </div>
+
+  <div class="card">
+    <h2>Excelから一括登録</h2>
+    <p style="font-size:12px;color:#718096;margin-bottom:8px">在庫管理リスト.xlsxをここにドロップするか、ボタンで選択してください</p>
+    <div class="drop-zone" onclick="document.getElementById('xl-file').click()" id="drop-zone">
+      <div class="drop-title">Excelファイルを選択</div>
+      <div class="drop-sub">在庫管理リスト.xlsx をドロップまたはタップ</div>
+    </div>
+    <input type="file" id="xl-file" accept=".xlsx,.xls" style="display:none" onchange="loadExcel(this)">
+    <div id="xl-msg"></div>
+  </div>
+
+  <div class="card">
+    <h2>物品を1件追加</h2>
+    <label>品番</label><input id="ni-code" placeholder="例：10401">
+    <label>品名</label><input id="ni-name" placeholder="例：E-260 ハンドル">
+    <label>種別</label>
+    <select id="ni-type">
+      <option>部品</option><option>製品</option><option>副資材</option><option>工具</option><option>治具</option><option>仕掛品</option><option>完成品</option><option>その他</option>
+    </select>
+    <label>数量</label><input id="ni-qty" type="number" value="0" min="0">
+    <label>業者</label><input id="ni-maker" placeholder="例：中央">
+    <label>製品（どの製品用か）</label><input id="ni-product" placeholder="例：E-260、共用">
+    <label>メモ</label><input id="ni-note" placeholder="例：MOQ1000">
+    <button class="btn btn-blue" onclick="addItem()">追加する</button>
+    <div id="add-msg"></div>
+  </div>
+
+  <div class="card">
+    <h2>場所を登録</h2>
+    <label>場所名</label><input id="nl-name" placeholder="例：棚A-1段目、原料室B棚">
+    <button class="btn btn-green" onclick="addLoc()">場所を登録する</button>
+    <div id="loc-msg"></div>
+  </div>
+</div>
+
+<!-- 場所登録 -->
+<div id="page-scan" class="page">
+  <div class="card">
+    <h2>物品の置き場所を記録</h2>
+    <label>物品を選ぶ（品名で検索）</label>
+    <input id="item-search" placeholder="品名・品番で絞り込み..." oninput="filterItemSelect()">
+    <select id="sel-item" size="5" style="margin-top:6px;height:120px" onchange="onItemSelect()"></select>
+    <div id="sel-item-info" class="result-box result-blue" style="display:none;margin-top:6px"></div>
+    <label style="margin-top:10px">移動先の場所</label>
+    <select id="sel-loc" onchange="onLocSelect()">
+      <option value="">場所を選択...</option>
+    </select>
+    <div id="sel-loc-info" class="result-box result-green" style="display:none;margin-top:6px"></div>
+    <label>数量を変更する場合</label>
+    <input id="move-qty" type="number" placeholder="空欄なら変更なし">
+    <button class="btn btn-green" id="btn-move" style="display:none" onclick="doMove()">この場所に記録する</button>
+    <div id="move-msg"></div>
+  </div>
+</div>
+
+<!-- 一覧 -->
+<div id="page-list" class="page">
+  <div class="card" style="padding:10px 12px;margin-bottom:8px">
+    <input id="search" placeholder="品名・品番・場所で検索..." oninput="renderList()" style="margin:0">
+  </div>
+  <div class="filter-bar" id="filter-bar"></div>
+  <div id="item-list"></div>
+</div>
+
+<!-- QR作成 -->
+<div id="page-qrgen" class="page">
+  <div class="card">
+    <p style="font-size:12px;color:#718096;margin-bottom:8px">スクリーンショットして印刷し、物品と棚に貼ってください</p>
+    <div style="font-size:11px;font-weight:700;color:#718096;margin-bottom:6px">物品QRコード</div>
+    <div class="qr-grid" id="qr-items"></div>
+    <div style="font-size:11px;font-weight:700;color:#718096;margin:12px 0 6px">場所QRコード</div>
+    <div class="qr-grid" id="qr-locs"></div>
+  </div>
+</div>
+
+<!-- 設定 -->
+<div id="page-settings" class="page">
+  <div class="card">
+    <h2>データのエクスポート</h2>
+    <p style="font-size:12px;color:#718096;margin-bottom:8px">現在の在庫データをExcelに書き出します</p>
+    <button class="btn btn-blue" onclick="exportExcel()">Excelに書き出す</button>
+  </div>
+  <div class="card">
+    <h2>全データ消去</h2>
+    <p style="font-size:12px;color:#718096;margin-bottom:8px">登録した物品・場所をすべて消去します。元に戻せません。</p>
+    <button class="btn btn-red" onclick="clearAll()">全データを消去する</button>
+  </div>
+  <div class="card">
+    <h2>バージョン情報</h2>
+    <p style="font-size:12px;color:#718096">工場在庫管理アプリ v3.0<br>物品数：<span id="cfg-items">0</span>件　場所数：<span id="cfg-locs">0</span>件</p>
+  </div>
+</div>
+
+<script>
+let db = JSON.parse(localStorage.getItem('inv5') || '{"items":{},"locs":{}}');
+let typeFilter = '';
+let allItemIds = [];
+
+document.getElementById('hdr-date').textContent = new Date().toLocaleDateString('ja-JP');
+
+function save(){ localStorage.setItem('inv5', JSON.stringify(db)); updateStats(); }
+function genId(p){ return p+Date.now()+Math.random().toString(36).slice(2,5); }
+function today(){ return new Date().toLocaleDateString('ja-JP'); }
+
+function showMsg(id,txt,ok,sec){
+  const el=document.getElementById(id);
+  if(!el)return;
+  el.className='msg '+(ok?'msg-ok':'msg-err');
+  el.textContent=txt;
+  if(sec!==0) setTimeout(()=>{el.textContent='';el.className='';},sec||4000);
+}
+
+function updateStats(){
+  const items=Object.values(db.items);
+  document.getElementById('s-items').textContent=items.length;
+  document.getElementById('s-locs').textContent=Object.keys(db.locs).length;
+  document.getElementById('s-low').textContent=items.filter(it=>it.qty<=0).length;
+  const ci=document.getElementById('cfg-items');
+  const cl=document.getElementById('cfg-locs');
+  if(ci)ci.textContent=items.length;
+  if(cl)cl.textContent=Object.keys(db.locs).length;
+}
+
+// Excel読み込み
+function loadExcel(input){
+  const file=input.files[0];
+  if(!file)return;
+  showMsg('xl-msg','読み込み中...', true, 0);
+  const reader=new FileReader();
+  reader.onload=function(e){
+    try{
+      const wb=XLSX.read(e.target.result,{type:'binary'});
+      const ws=wb.Sheets[wb.SheetNames[0]];
+      const rows=XLSX.utils.sheet_to_json(ws,{defval:''});
+      let count=0;
+      rows.forEach(row=>{
+        const name=(row['品名']||row['品　   　品      名']||'').toString().trim();
+        if(!name||name==='部　   　品      名'||name==='品　   　品      名') return;
+        const code=(row['品番']||'').toString().trim();
+        const type=(row['種別']||'部品').toString().trim();
+        const qty=parseInt(row['現在数量'])||0;
+        const maker=(row['業者']||'').toString().trim();
+        const product=(row['製品']||'').toString().trim();
+        const note=(row['メモ']||'').toString().trim();
+        if(!name) return;
+        const id=genId('ITEM-');
+        db.items[id]={code,name,type,qty,maker,product,note,location:'',locationName:'未設定',updated:today()};
+        count++;
+      });
+      save();renderList();renderQR();renderSelects();buildFilterBar();
+      showMsg('xl-msg',count+'件を登録しました！',true);
+      input.value='';
+    }catch(err){
+      showMsg('xl-msg','読み込みエラー：'+err.message,false);
+    }
+  };
+  reader.readAsBinaryString(file);
+}
+
+// ドラッグ&ドロップ
+const dz=document.getElementById('drop-zone');
+dz.addEventListener('dragover',e=>{e.preventDefault();dz.style.background='#BEE3F8';});
+dz.addEventListener('dragleave',()=>{dz.style.background='#EBF8FF';});
+dz.addEventListener('drop',e=>{
+  e.preventDefault();dz.style.background='#EBF8FF';
+  const file=e.dataTransfer.files[0];
+  if(file){const dt=new DataTransfer();dt.items.add(file);document.getElementById('xl-file').files=dt.files;loadExcel(document.getElementById('xl-file'));}
+});
+
+function addItem(){
+  const name=document.getElementById('ni-name').value.trim();
+  if(!name){showMsg('add-msg','品名を入力してください',false);return;}
+  const id=genId('ITEM-');
+  db.items[id]={
+    code:document.getElementById('ni-code').value.trim(),
+    name,
+    type:document.getElementById('ni-type').value,
+    qty:parseInt(document.getElementById('ni-qty').value)||0,
+    maker:document.getElementById('ni-maker').value.trim(),
+    product:document.getElementById('ni-product').value.trim(),
+    note:document.getElementById('ni-note').value.trim(),
+    location:'',locationName:'未設定',updated:today()
+  };
+  save();renderList();renderQR();renderSelects();buildFilterBar();
+  ['ni-code','ni-name','ni-maker','ni-product','ni-note'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('ni-qty').value='0';
+  showMsg('add-msg','「'+name+'」を追加しました',true);
+}
+
+function addLoc(){
+  const name=document.getElementById('nl-name').value.trim();
+  if(!name){showMsg('loc-msg','場所名を入力してください',false);return;}
+  const id=genId('LOC-');
+  db.locs[id]={name};
+  save();renderQR();renderSelects();
+  document.getElementById('nl-name').value='';
+  showMsg('loc-msg','「'+name+'」を登録しました',true);
+}
+
+function filterItemSelect(){
+  const q=document.getElementById('item-search').value.toLowerCase();
+  const sel=document.getElementById('sel-item');
+  sel.innerHTML='';
+  allItemIds=Object.keys(db.items).filter(id=>{
+    const it=db.items[id];
+    return !q||it.name.toLowerCase().includes(q)||(it.code&&it.code.toLowerCase().includes(q));
+  });
+  allItemIds.forEach(id=>{
+    const it=db.items[id];
+    const opt=document.createElement('option');
+    opt.value=id;
+    opt.textContent=(it.code?it.code+' ':'')+it.name+(it.locationName&&it.locationName!='未設定'?' ['+it.locationName+']':'');
+    sel.appendChild(opt);
+  });
+}
+
+function onItemSelect(){
+  const id=document.getElementById('sel-item').value;
+  const el=document.getElementById('sel-item-info');
+  if(!id||!db.items[id]){el.style.display='none';return;}
+  const it=db.items[id];
+  el.style.display='block';
+  el.innerHTML=`<strong>${it.name}</strong><br>種別：${it.type}　数量：${it.qty}<br>現在の場所：<strong>${it.locationName}</strong>${it.note?'<br>メモ：'+it.note:''}`;
+  checkMoveReady();
+}
+
+function onLocSelect(){
+  const id=document.getElementById('sel-loc').value;
+  const el=document.getElementById('sel-loc-info');
+  if(!id){el.style.display='none';checkMoveReady();return;}
+  el.style.display='block';
+  el.innerHTML=`移動先：<strong>${db.locs[id].name}</strong>`;
+  checkMoveReady();
+}
+
+function checkMoveReady(){
+  const iid=document.getElementById('sel-item').value;
+  const lid=document.getElementById('sel-loc').value;
+  document.getElementById('btn-move').style.display=(iid&&lid)?'block':'none';
+}
+
+function doMove(){
+  const iid=document.getElementById('sel-item').value;
+  const lid=document.getElementById('sel-loc').value;
+  const qty=document.getElementById('move-qty').value;
+  if(!iid||!lid){showMsg('move-msg','物品と場所を選んでください',false);return;}
+  db.items[iid].location=lid;
+  db.items[iid].locationName=db.locs[lid].name;
+  if(qty!=='')db.items[iid].qty=parseInt(qty)||0;
+  db.items[iid].updated=today();
+  save();renderList();
+  showMsg('move-msg','「'+db.items[iid].name+'」→「'+db.locs[lid].name+'」に記録しました！',true);
+  document.getElementById('sel-item-info').style.display='none';
+  document.getElementById('sel-loc-info').style.display='none';
+  document.getElementById('btn-move').style.display='none';
+  document.getElementById('move-qty').value='';
+  document.getElementById('sel-loc').value='';
+  document.getElementById('item-search').value='';
+  filterItemSelect();
+}
+
+const typeBadgeClass={部品:'bg-b',製品:'bg-g',副資材:'bg-p',工具:'bg-y',治具:'bg-y',仕掛品:'bg-orange',完成品:'bg-g',その他:'bg-gray'};
+
+function buildFilterBar(){
+  const types=[...new Set(Object.values(db.items).map(it=>it.type))].sort();
+  const bar=document.getElementById('filter-bar');
+  bar.innerHTML='<button class="f-btn'+(typeFilter===''?' on':'')+'" onclick="setFilter(\'\')">すべて</button>';
+  types.forEach(t=>{
+    bar.innerHTML+=`<button class="f-btn${typeFilter===t?' on':''}" onclick="setFilter('${t}')">${t}</button>`;
+  });
+}
+
+function setFilter(t){typeFilter=t;buildFilterBar();renderList();}
+
+function renderList(){
+  const q=document.getElementById('search').value.toLowerCase();
+  const el=document.getElementById('item-list');
+  const entries=Object.entries(db.items).filter(([id,it])=>{
+    const mq=!q||it.name.toLowerCase().includes(q)||(it.code&&it.code.toLowerCase().includes(q))||it.locationName.toLowerCase().includes(q);
+    const mt=!typeFilter||it.type===typeFilter;
+    return mq&&mt;
+  });
+  if(!entries.length){el.innerHTML='<div class="card" style="text-align:center;color:#a0aec0;padding:20px">該当なし</div>';return;}
+  el.innerHTML=entries.map(([id,it])=>{
+    const qb=it.qty<=0?'bg-r':it.qty<=3?'bg-y':'bg-g';
+    const tb=typeBadgeClass[it.type]||'bg-gray';
+    return `<div class="item-card">
+      <div style="display:flex;gap:8px;align-items:flex-start">
+        <div style="flex:1">
+          <div class="item-name">${it.code?'<span style="color:#718096;font-weight:400;font-size:11px">'+it.code+'</span> ':''} ${it.name}</div>
+          <div class="item-loc">場所：<strong style="color:#1F4E79">${it.locationName}</strong></div>
+          <div class="item-meta">
+            <span class="type-badge ${tb}">${it.type}</span>
+            ${it.product?'<span style="margin-left:4px">'+it.product+'</span>':''}
+            ${it.maker?'　'+it.maker:''}
+            　更新：${it.updated}
+          </div>
+          ${it.note?`<div style="font-size:10px;color:#718096;margin-top:2px">${it.note}</div>`:''}
+        </div>
+        <span class="badge ${qb}">残 ${it.qty}</span>
+      </div>
+      <div class="item-actions">
+        <button class="btn-sm" style="background:#276749;color:#fff" onclick="chQty('${id}',1)">+1</button>
+        <button class="btn-sm" style="background:#C05621;color:#fff" onclick="chQty('${id}',-1)">-1</button>
+        <button class="btn-sm" style="background:#EDF2F7;color:#4A5568" onclick="editQty('${id}')">数量変更</button>
+        <button class="btn-sm" style="background:#FED7D7;color:#9B2C2C" onclick="delItem('${id}')">削除</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function chQty(id,d){
+  if(!db.items[id])return;
+  db.items[id].qty=Math.max(0,(db.items[id].qty||0)+d);
+  db.items[id].updated=today();
+  save();renderList();
+}
+
+function editQty(id){
+  const it=db.items[id];
+  const v=prompt('「'+it.name+'」の数量（現在：'+it.qty+'）\n新しい数量を入力：');
+  if(v===null)return;
+  const n=parseInt(v);
+  if(isNaN(n)){alert('数字を入力してください');return;}
+  db.items[id].qty=Math.max(0,n);
+  db.items[id].updated=today();
+  save();renderList();
+}
+
+function delItem(id){
+  if(!confirm('「'+db.items[id].name+'」を削除しますか？'))return;
+  delete db.items[id];save();renderList();renderSelects();renderQR();buildFilterBar();
+}
+
+function renderSelects(){
+  const sl=document.getElementById('sel-loc');
+  if(sl)sl.innerHTML='<option value="">場所を選択...</option>'+Object.entries(db.locs).map(([id,lo])=>`<option value="${id}">${lo.name}</option>`).join('');
+  filterItemSelect();
+}
+
+function renderQR(){
+  const ig=document.getElementById('qr-items');
+  const lg=document.getElementById('qr-locs');
+  if(!ig||!lg)return;
+  ig.innerHTML='';lg.innerHTML='';
+  Object.entries(db.items).forEach(([id,it])=>{
+    const div=document.createElement('div');div.className='qr-card';
+    div.innerHTML=`<div id="qi-${id}"></div><p>${it.code?it.code+' ':''}${it.name}</p>`;
+    ig.appendChild(div);
+    setTimeout(()=>{try{new QRCode(document.getElementById('qi-'+id),{text:id,width:90,height:90,correctLevel:QRCode.CorrectLevel.M});}catch(e){}},80);
+  });
+  Object.entries(db.locs).forEach(([id,lo])=>{
+    const div=document.createElement('div');div.className='qr-card';
+    div.innerHTML=`<div id="ql-${id}"></div><p>${lo.name}</p>`;
+    lg.appendChild(div);
+    setTimeout(()=>{try{new QRCode(document.getElementById('ql-'+id),{text:id,width:90,height:90,correctLevel:QRCode.CorrectLevel.M});}catch(e){}},80);
+  });
+}
+
+function exportExcel(){
+  const rows=Object.values(db.items).map(it=>({
+    品番:it.code||'',品名:it.name,種別:it.type,現在数量:it.qty,
+    業者:it.maker||'',製品:it.product||'',場所:it.locationName,メモ:it.note||'',更新日:it.updated
+  }));
+  const ws=XLSX.utils.json_to_sheet(rows);
+  const wb=XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb,ws,'在庫');
+  XLSX.writeFile(wb,'在庫エクスポート_'+today()+'.xlsx');
+}
+
+function clearAll(){
+  if(!confirm('全データを消去します。本当によろしいですか？'))return;
+  if(!confirm('もう一度確認します。全データを消去してよいですか？'))return;
+  db={items:{},locs:{}};
+  save();renderList();renderQR();renderSelects();buildFilterBar();
+  showMsg('xl-msg','全データを消去しました',true);
+}
+
+function showPage(name,btn){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('page-'+name).classList.add('active');
+  btn.classList.add('active');
+  if(name==='list'){buildFilterBar();renderList();}
+  if(name==='qrgen')renderQR();
+  if(name==='scan')renderSelects();
+  if(name==='settings')updateStats();
+}
+
+updateStats();renderList();renderSelects();buildFilterBar();
+</script>
+</body>
+</html>
