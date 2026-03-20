@@ -3,373 +3,368 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-<title>在庫管理システム</title>
+<title>工場在庫管理</title>
 <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
-<script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-body{font-family:Arial,sans-serif;background:#f0f4f8;color:#1a202c;font-size:15px}
+body{font-family:Arial,sans-serif;background:#f0f4f8;color:#1a202c;font-size:15px;max-width:480px;margin:0 auto}
 .hdr{background:#1F4E79;color:#fff;padding:12px 16px;display:flex;align-items:center;gap:10px}
 .hdr h1{font-size:17px;font-weight:700}
 .tabs{display:flex;background:#fff;border-bottom:2px solid #e2e8f0}
-.tab{flex:1;padding:10px 4px;text-align:center;font-size:13px;font-weight:600;color:#718096;cursor:pointer;border:none;background:none}
+.tab{flex:1;padding:10px 2px;text-align:center;font-size:12px;font-weight:700;color:#718096;cursor:pointer;border:none;background:none}
 .tab.active{color:#1F4E79;border-bottom:3px solid #1F4E79;margin-bottom:-2px}
 .page{display:none;padding:12px}
 .page.active{display:block}
 .card{background:#fff;border-radius:10px;padding:14px;margin-bottom:12px;border:1px solid #e2e8f0}
 .card h2{font-size:14px;color:#2d3748;margin-bottom:10px;font-weight:700}
 label{display:block;font-size:12px;color:#718096;margin-bottom:4px;margin-top:10px;font-weight:600}
-input,select,textarea{width:100%;padding:9px 12px;border:1.5px solid #cbd5e0;border-radius:8px;font-size:14px;color:#2d3748;background:#fff}
+input,select{width:100%;padding:9px 12px;border:1.5px solid #cbd5e0;border-radius:8px;font-size:14px;color:#2d3748;background:#fff}
 input:focus,select:focus{outline:none;border-color:#1F4E79}
 .btn{width:100%;padding:12px;border:none;border-radius:8px;font-size:15px;font-weight:700;cursor:pointer;margin-top:10px}
-.btn-primary{background:#1F4E79;color:#fff}
+.btn-blue{background:#1F4E79;color:#fff}
 .btn-green{background:#276749;color:#fff}
 .btn-orange{background:#C05621;color:#fff}
-.btn-sm{padding:6px 14px;font-size:12px;width:auto;border-radius:6px;font-weight:600;border:none;cursor:pointer}
+.btn-gray{background:#EDF2F7;color:#4A5568}
+.btn-sm{padding:6px 12px;font-size:12px;width:auto;border-radius:6px;font-weight:700;border:none;cursor:pointer}
 .badge{display:inline-block;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:700}
-.badge-green{background:#C6F6D5;color:#276749}
-.badge-blue{background:#BEE3F8;color:#2B6CB0}
-.badge-red{background:#FED7D7;color:#9B2C2C}
-.badge-gray{background:#EDF2F7;color:#4A5568}
-.item-row{display:flex;align-items:center;padding:10px 0;border-bottom:1px solid #f0f4f8;gap:10px}
-.item-row:last-child{border-bottom:none}
-.item-name{font-weight:700;font-size:14px;flex:1}
-.item-loc{font-size:12px;color:#718096;margin-top:2px}
-.scan-box{border:2px dashed #cbd5e0;border-radius:10px;padding:16px;text-align:center;background:#f7fafc;margin:10px 0}
-.scan-result{background:#EBF8FF;border:1.5px solid #90CDF4;border-radius:8px;padding:10px;margin-top:10px;font-size:13px}
-.scan-result strong{color:#2B6CB0}
-#qr-reader{width:100%;border-radius:10px;overflow:hidden}
-.stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.stat-card{background:#fff;border-radius:10px;padding:12px;border:1px solid #e2e8f0;text-align:center}
-.stat-num{font-size:26px;font-weight:700;color:#1F4E79}
-.stat-label{font-size:11px;color:#718096;margin-top:4px}
-.qr-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.qr-card{background:#fff;border-radius:10px;padding:12px;border:1px solid #e2e8f0;text-align:center}
-.qr-card p{font-size:11px;color:#4A5568;margin-top:6px;word-break:break-all}
-.msg{padding:10px 12px;border-radius:8px;margin:8px 0;font-size:13px;font-weight:600}
+.bg-g{background:#C6F6D5;color:#276749}
+.bg-r{background:#FED7D7;color:#9B2C2C}
+.bg-b{background:#BEE3F8;color:#2B6CB0}
+.bg-y{background:#FEFCBF;color:#744210}
+.item-card{background:#fff;border-radius:8px;padding:10px 12px;margin-bottom:8px;border:1px solid #e2e8f0}
+.item-name{font-weight:700;font-size:14px}
+.item-loc{font-size:12px;color:#4A5568;margin-top:3px}
+.item-meta{font-size:11px;color:#a0aec0;margin-top:2px}
+.item-actions{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap}
+.result-box{padding:12px;border-radius:8px;margin:8px 0;font-size:13px;line-height:1.6}
+.result-blue{background:#EBF8FF;border:1.5px solid #90CDF4}
+.result-green{background:#F0FFF4;border:1.5px solid #9AE6B4}
+.msg{padding:10px 12px;border-radius:8px;margin:6px 0;font-size:13px;font-weight:700}
 .msg-ok{background:#C6F6D5;color:#276749}
 .msg-err{background:#FED7D7;color:#9B2C2C}
-.section-title{font-size:12px;color:#718096;font-weight:700;margin:14px 0 6px;text-transform:uppercase;letter-spacing:.5px}
+.stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px}
+.stat-card{background:#fff;border-radius:10px;padding:10px 8px;border:1px solid #e2e8f0;text-align:center}
+.stat-num{font-size:22px;font-weight:700;color:#1F4E79}
+.stat-label{font-size:10px;color:#718096;margin-top:2px}
+.qr-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.qr-card{background:#fff;border-radius:10px;padding:10px;border:1px solid #e2e8f0;text-align:center}
+.qr-card p{font-size:11px;color:#4A5568;margin-top:6px;font-weight:700;word-break:break-all}
+.paste-area{background:#FFF8E1;border:2px dashed #F6AD55;border-radius:10px;padding:14px;margin:10px 0}
+.paste-area h3{font-size:13px;color:#744210;font-weight:700;margin-bottom:8px}
+.step-badge{display:inline-block;background:#1F4E79;color:#fff;border-radius:50%;width:22px;height:22px;text-align:center;line-height:22px;font-size:12px;font-weight:700;margin-right:6px}
+.how-to{background:#EBF8FF;border-radius:8px;padding:10px 12px;font-size:12px;color:#2B6CB0;line-height:1.8;margin-bottom:10px}
 </style>
 </head>
 <body>
 <div class="hdr">
-  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
   <h1>工場在庫管理</h1>
 </div>
-
 <div class="tabs">
-  <button class="tab active" onclick="showPage('home')">ホーム</button>
-  <button class="tab" onclick="showPage('scan')">スキャン</button>
-  <button class="tab" onclick="showPage('list')">在庫一覧</button>
-  <button class="tab" onclick="showPage('qrgen')">QR作成</button>
+  <button class="tab active" onclick="showPage('home',this)">ホーム</button>
+  <button class="tab" onclick="showPage('scan',this)">場所登録</button>
+  <button class="tab" onclick="showPage('list',this)">一覧</button>
+  <button class="tab" onclick="showPage('qrgen',this)">QR作成</button>
 </div>
 
 <!-- ホーム -->
 <div id="page-home" class="page active">
-  <div class="stat-grid" style="margin-bottom:12px">
-    <div class="stat-card">
-      <div class="stat-num" id="stat-items">0</div>
-      <div class="stat-label">登録物品数</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-num" id="stat-locations">0</div>
-      <div class="stat-label">登録場所数</div>
-    </div>
+  <div class="stat-grid">
+    <div class="stat-card"><div class="stat-num" id="s-items">0</div><div class="stat-label">物品数</div></div>
+    <div class="stat-card"><div class="stat-num" id="s-locs">0</div><div class="stat-label">場所数</div></div>
   </div>
-
   <div class="card">
-    <h2>物品を新規登録</h2>
-    <label>物品名（例：金型A-001、材料POM白）</label>
-    <input type="text" id="new-item-name" placeholder="物品名を入力">
+    <h2>物品を登録</h2>
+    <label>物品名</label>
+    <input id="ni-name" placeholder="例：金型A-001、材料POM白">
     <label>種別</label>
-    <select id="new-item-type">
-      <option value="金型">金型</option>
-      <option value="材料">材料</option>
-      <option value="工具">工具</option>
-      <option value="部品">部品</option>
-      <option value="その他">その他</option>
+    <select id="ni-type">
+      <option>金型</option><option>材料</option><option>工具</option><option>部品</option><option>その他</option>
     </select>
-    <label>初期数量</label>
-    <input type="number" id="new-item-qty" placeholder="0" min="0" value="1">
+    <label>数量</label>
+    <input id="ni-qty" type="number" value="1" min="0">
     <label>メモ（任意）</label>
-    <input type="text" id="new-item-note" placeholder="例：赤色ラベル、重さ5kg">
-    <button class="btn btn-primary" onclick="addItem()">登録する</button>
+    <input id="ni-note" placeholder="例：赤ラベル・重さ5kg">
+    <button class="btn btn-blue" onclick="addItem()">登録する</button>
     <div id="add-msg"></div>
   </div>
-
   <div class="card">
-    <h2>場所を新規登録</h2>
-    <label>場所名（例：棚A-1段目、原料室B棚）</label>
-    <input type="text" id="new-loc-name" placeholder="場所名を入力">
-    <button class="btn btn-green" onclick="addLocation()">場所を登録する</button>
+    <h2>場所（棚・ラック）を登録</h2>
+    <label>場所名</label>
+    <input id="nl-name" placeholder="例：棚A-1段目、原料室B棚">
+    <button class="btn btn-green" onclick="addLoc()">場所を登録する</button>
     <div id="loc-msg"></div>
   </div>
 </div>
 
-<!-- スキャン -->
+<!-- 場所登録（貼り付け方式） -->
 <div id="page-scan" class="page">
   <div class="card">
-    <h2>QRコードをスキャン</h2>
-    <p style="font-size:12px;color:#718096;margin-bottom:10px">物品QR → 場所QR の順に読んでください</p>
+    <h2>物品の置き場所を記録する</h2>
 
-    <div class="scan-box">
-      <div id="qr-reader"></div>
-      <button class="btn btn-primary" onclick="startScan()" id="scan-btn" style="margin-top:8px">カメラを起動してスキャン</button>
-      <button class="btn" style="background:#EDF2F7;color:#4A5568;margin-top:6px" onclick="stopScan()" id="stop-btn" style="display:none">スキャン停止</button>
+    <div class="how-to">
+      <div style="font-weight:700;margin-bottom:4px">やり方（30秒でできます）</div>
+      <span class="step-badge">1</span>iPhoneの標準カメラで物品のQRを読む<br>
+      <span class="step-badge">2</span>画面上部の通知をタップ → 文字列をコピー<br>
+      <span class="step-badge">3</span>下の「物品ID」欄に貼り付けて検索<br>
+      <span class="step-badge">4</span>場所を選んで「記録する」をタップ
     </div>
 
-    <div id="scan-step" style="font-size:13px;color:#4A5568;text-align:center;padding:8px 0">
-      ステップ1：物品のQRコードを読んでください
+    <div class="paste-area">
+      <h3>物品QRの読み取り結果を貼り付け</h3>
+      <input id="paste-item" placeholder="ここにIDを貼り付け（例：ITEM-...）" oninput="lookupItem()">
+      <div id="item-found" class="result-box result-blue" style="display:none;margin-top:8px"></div>
     </div>
-    <div id="scan-item-result" class="scan-result" style="display:none"></div>
-    <div id="scan-loc-result" class="scan-result" style="display:none;background:#F0FFF4;border-color:#9AE6B4"></div>
-    <button class="btn btn-green" id="btn-confirm" style="display:none" onclick="confirmScan()">この場所に登録する</button>
-    <button class="btn" style="background:#EDF2F7;color:#4A5568;display:none" id="btn-reset" onclick="resetScan()">やり直す</button>
 
-    <div id="scan-msg"></div>
+    <div id="loc-select-area" style="display:none">
+      <div class="paste-area" style="background:#F0FFF4;border-color:#9AE6B4">
+        <h3 style="color:#276749">場所QRの読み取り結果を貼り付け　または下で選択</h3>
+        <input id="paste-loc" placeholder="場所IDを貼り付け（LOC-...）" oninput="lookupLoc()">
+        <div id="loc-found" class="result-box result-green" style="display:none;margin-top:8px"></div>
+        <label style="margin-top:10px">リストから場所を選ぶ</label>
+        <select id="loc-select" onchange="selectLocFromList()">
+          <option value="">選択してください</option>
+        </select>
+      </div>
+      <button class="btn btn-green" id="btn-confirm" style="display:none" onclick="confirmMove()">この場所に記録する</button>
+      <div id="scan-msg"></div>
+    </div>
   </div>
 
   <div class="card">
-    <h2>手動で場所を更新</h2>
-    <label>物品を選択</label>
-    <select id="manual-item"></select>
-    <label>移動先の場所</label>
-    <select id="manual-loc"></select>
-    <label>数量を更新（任意）</label>
-    <input type="number" id="manual-qty" placeholder="変更なしは空欄">
-    <button class="btn btn-orange" onclick="manualUpdate()">手動で更新する</button>
+    <h2>手動で更新</h2>
+    <label>物品</label><select id="m-item"></select>
+    <label>移動先の場所</label><select id="m-loc"></select>
+    <label>数量（変更する場合だけ）</label>
+    <input id="m-qty" type="number" placeholder="空欄なら変更なし">
+    <button class="btn btn-orange" onclick="manualMove()">手動で更新する</button>
     <div id="manual-msg"></div>
   </div>
 </div>
 
-<!-- 在庫一覧 -->
+<!-- 一覧 -->
 <div id="page-list" class="page">
-  <div class="card" style="padding:10px 14px">
-    <input type="text" id="search-box" placeholder="品名・場所で検索..." oninput="renderList()" style="margin:0">
+  <div class="card" style="padding:10px 12px;margin-bottom:8px">
+    <input id="search" placeholder="品名・場所で検索..." oninput="renderList()" style="margin:0">
   </div>
   <div id="item-list"></div>
 </div>
 
-<!-- QRコード作成 -->
+<!-- QR作成 -->
 <div id="page-qrgen" class="page">
   <div class="card">
-    <h2>物品QRコードを印刷用に作成</h2>
-    <p style="font-size:12px;color:#718096;margin-bottom:10px">登録済みの物品のQRコードをまとめて表示します。スマホの画面を見せるか、スクリーンショットして印刷してください。</p>
-    <div class="qr-grid" id="qr-items-grid"></div>
-  </div>
-  <div class="card">
-    <h2>場所QRコードを作成</h2>
-    <div class="qr-grid" id="qr-locs-grid"></div>
+    <p style="font-size:12px;color:#718096;margin-bottom:10px">
+      QRコードが表示されたら、スクリーンショットして印刷し物品と棚に貼ってください。<br>
+      iPhoneの標準カメラでこのQRを読むとIDが表示されます。
+    </p>
+    <div style="font-size:12px;font-weight:700;color:#718096;margin-bottom:8px">物品QRコード</div>
+    <div class="qr-grid" id="qr-items"></div>
+    <div style="font-size:12px;font-weight:700;color:#718096;margin:16px 0 8px">場所QRコード</div>
+    <div class="qr-grid" id="qr-locs"></div>
   </div>
 </div>
 
 <script>
-let db = JSON.parse(localStorage.getItem('inv_db') || '{"items":{},"locations":{},"log":[]}');
-let scanState = {step:0, itemId:null, locId:null};
-let scanner = null;
-let scanning = false;
+let db = JSON.parse(localStorage.getItem('inv3') || '{"items":{},"locs":{}}');
+let selectedItemId = null;
+let selectedLocId = null;
 
-function save(){ localStorage.setItem('inv_db', JSON.stringify(db)); updateStats(); }
+function save(){ localStorage.setItem('inv3', JSON.stringify(db)); updateStats(); }
+function genId(p){ return p+Date.now()+Math.random().toString(36).slice(2,5); }
+function today(){ return new Date().toLocaleDateString('ja-JP'); }
 
-function updateStats(){
-  document.getElementById('stat-items').textContent = Object.keys(db.items).length;
-  document.getElementById('stat-locations').textContent = Object.keys(db.locations).length;
+function showMsg(id,txt,ok){
+  const el=document.getElementById(id);
+  if(!el)return;
+  el.className='msg '+(ok?'msg-ok':'msg-err');
+  el.textContent=txt;
+  setTimeout(()=>{el.textContent='';el.className='';},4000);
 }
 
-function genId(prefix){ return prefix + Date.now() + Math.random().toString(36).slice(2,5); }
-
-function showMsg(id, text, ok){
-  const el = document.getElementById(id);
-  el.className = 'msg ' + (ok ? 'msg-ok' : 'msg-err');
-  el.textContent = text;
-  setTimeout(()=>el.textContent='', 3000);
+function updateStats(){
+  document.getElementById('s-items').textContent=Object.keys(db.items).length;
+  document.getElementById('s-locs').textContent=Object.keys(db.locs).length;
 }
 
 function addItem(){
-  const name = document.getElementById('new-item-name').value.trim();
-  const type = document.getElementById('new-item-type').value;
-  const qty = parseInt(document.getElementById('new-item-qty').value) || 0;
-  const note = document.getElementById('new-item-note').value.trim();
-  if(!name){ showMsg('add-msg','物品名を入力してください',false); return; }
-  const id = genId('ITEM-');
-  db.items[id] = {name, type, qty, note, location:'', locationName:'未設定', updatedAt: new Date().toLocaleDateString('ja-JP')};
-  save(); renderSelects(); renderList(); renderQR();
-  document.getElementById('new-item-name').value='';
-  document.getElementById('new-item-qty').value='1';
-  document.getElementById('new-item-note').value='';
+  const name=document.getElementById('ni-name').value.trim();
+  if(!name){showMsg('add-msg','物品名を入力してください',false);return;}
+  const id=genId('ITEM-');
+  db.items[id]={name,type:document.getElementById('ni-type').value,qty:parseInt(document.getElementById('ni-qty').value)||0,note:document.getElementById('ni-note').value.trim(),location:'',locationName:'未設定',updated:today()};
+  save();renderList();renderQR();renderSelects();
+  document.getElementById('ni-name').value='';
   showMsg('add-msg','「'+name+'」を登録しました',true);
 }
 
-function addLocation(){
-  const name = document.getElementById('new-loc-name').value.trim();
-  if(!name){ showMsg('loc-msg','場所名を入力してください',false); return; }
-  const id = genId('LOC-');
-  db.locations[id] = {name};
-  save(); renderSelects(); renderQR();
-  document.getElementById('new-loc-name').value='';
+function addLoc(){
+  const name=document.getElementById('nl-name').value.trim();
+  if(!name){showMsg('loc-msg','場所名を入力してください',false);return;}
+  const id=genId('LOC-');
+  db.locs[id]={name};
+  save();renderQR();renderSelects();
+  document.getElementById('nl-name').value='';
   showMsg('loc-msg','「'+name+'」を登録しました',true);
 }
 
+function lookupItem(){
+  const val=document.getElementById('paste-item').value.trim();
+  const el=document.getElementById('item-found');
+  const locArea=document.getElementById('loc-select-area');
+  selectedItemId=null;
+  if(!val){el.style.display='none';locArea.style.display='none';return;}
+  const id=Object.keys(db.items).find(k=>k===val||k.includes(val)||val.includes(k));
+  if(id){
+    const it=db.items[id];
+    selectedItemId=id;
+    el.style.display='block';
+    el.innerHTML=`<strong>物品：${it.name}</strong><br>種別：${it.type}　残数：${it.qty}個<br>現在の場所：<strong>${it.locationName}</strong>`;
+    locArea.style.display='block';
+    document.getElementById('btn-confirm').style.display='none';
+    selectedLocId=null;
+  } else {
+    el.style.display='block';
+    el.innerHTML='<span style="color:#C05621">この物品は登録されていません。IDを確認してください。</span>';
+    locArea.style.display='none';
+  }
+}
+
+function lookupLoc(){
+  const val=document.getElementById('paste-loc').value.trim();
+  const el=document.getElementById('loc-found');
+  selectedLocId=null;
+  if(!val){el.style.display='none';document.getElementById('btn-confirm').style.display='none';return;}
+  const id=Object.keys(db.locs).find(k=>k===val||k.includes(val)||val.includes(k));
+  if(id){
+    selectedLocId=id;
+    el.style.display='block';
+    el.innerHTML=`<strong>場所：${db.locs[id].name}</strong>`;
+    document.getElementById('btn-confirm').style.display='block';
+    document.getElementById('loc-select').value='';
+  } else {
+    el.style.display='block';
+    el.innerHTML='<span style="color:#C05621">この場所は登録されていません。</span>';
+    document.getElementById('btn-confirm').style.display='none';
+  }
+}
+
+function selectLocFromList(){
+  const id=document.getElementById('loc-select').value;
+  if(!id)return;
+  selectedLocId=id;
+  document.getElementById('paste-loc').value='';
+  const el=document.getElementById('loc-found');
+  el.style.display='block';
+  el.innerHTML=`<strong>場所：${db.locs[id].name}</strong>`;
+  document.getElementById('btn-confirm').style.display='block';
+}
+
+function confirmMove(){
+  if(!selectedItemId||!selectedLocId){showMsg('scan-msg','物品と場所を選んでください',false);return;}
+  const it=db.items[selectedItemId];
+  const lo=db.locs[selectedLocId];
+  it.location=selectedLocId;it.locationName=lo.name;it.updated=today();
+  save();renderList();
+  showMsg('scan-msg','「'+it.name+'」→「'+lo.name+'」に記録しました！',true);
+  document.getElementById('paste-item').value='';
+  document.getElementById('paste-loc').value='';
+  document.getElementById('item-found').style.display='none';
+  document.getElementById('loc-found').style.display='none';
+  document.getElementById('loc-select-area').style.display='none';
+  document.getElementById('btn-confirm').style.display='none';
+  document.getElementById('loc-select').value='';
+  selectedItemId=null;selectedLocId=null;
+}
+
+function manualMove(){
+  const iid=document.getElementById('m-item').value;
+  const lid=document.getElementById('m-loc').value;
+  const qty=document.getElementById('m-qty').value;
+  if(!iid||!lid){showMsg('manual-msg','物品と場所を選んでください',false);return;}
+  db.items[iid].location=lid;
+  db.items[iid].locationName=db.locs[lid].name;
+  if(qty!=='')db.items[iid].qty=parseInt(qty)||0;
+  db.items[iid].updated=today();
+  save();renderList();
+  showMsg('manual-msg','「'+db.items[iid].name+'」→「'+db.locs[lid].name+'」に更新しました',true);
+  document.getElementById('m-qty').value='';
+}
+
 function renderSelects(){
-  const mi = document.getElementById('manual-item');
-  const ml = document.getElementById('manual-loc');
-  mi.innerHTML = '<option value="">選択してください</option>' + Object.entries(db.items).map(([id,it])=>`<option value="${id}">${it.name}</option>`).join('');
-  ml.innerHTML = '<option value="">選択してください</option>' + Object.entries(db.locations).map(([id,lo])=>`<option value="${id}">${lo.name}</option>`).join('');
+  const mi=document.getElementById('m-item');
+  const ml=document.getElementById('m-loc');
+  const ls=document.getElementById('loc-select');
+  if(mi) mi.innerHTML='<option value="">選択...</option>'+Object.entries(db.items).map(([id,it])=>`<option value="${id}">${it.name}</option>`).join('');
+  if(ml) ml.innerHTML='<option value="">選択...</option>'+Object.entries(db.locs).map(([id,lo])=>`<option value="${id}">${lo.name}</option>`).join('');
+  if(ls) ls.innerHTML='<option value="">選択してください</option>'+Object.entries(db.locs).map(([id,lo])=>`<option value="${id}">${lo.name}</option>`).join('');
 }
 
 function renderList(){
-  const q = document.getElementById('search-box').value.toLowerCase();
-  const el = document.getElementById('item-list');
-  const items = Object.entries(db.items).filter(([id,it])=> !q || it.name.toLowerCase().includes(q) || it.locationName.toLowerCase().includes(q));
-  if(!items.length){ el.innerHTML='<div class="card" style="text-align:center;color:#718096;padding:20px">登録された物品がありません</div>'; return; }
-  el.innerHTML = items.map(([id,it])=>{
-    const badge = it.qty <= 0 ? 'badge-red' : it.qty <= 5 ? 'badge-red' : 'badge-green';
-    return `<div class="card" style="margin-bottom:8px">
-      <div class="item-row">
+  const q=document.getElementById('search').value.toLowerCase();
+  const el=document.getElementById('item-list');
+  const entries=Object.entries(db.items).filter(([id,it])=>!q||it.name.toLowerCase().includes(q)||it.locationName.toLowerCase().includes(q));
+  if(!entries.length){el.innerHTML='<div class="card" style="text-align:center;color:#a0aec0;padding:20px">物品がありません</div>';return;}
+  el.innerHTML=entries.map(([id,it])=>{
+    const qb=it.qty<=0?'bg-r':it.qty<=3?'bg-y':'bg-g';
+    return `<div class="item-card">
+      <div style="display:flex;gap:8px;align-items:flex-start">
         <div style="flex:1">
           <div class="item-name">${it.name}</div>
-          <div class="item-loc">置き場所：<strong>${it.locationName}</strong></div>
-          <div style="font-size:11px;color:#a0aec0;margin-top:2px">${it.type}　更新：${it.updatedAt}</div>
+          <div class="item-loc">場所：<strong style="color:#1F4E79">${it.locationName}</strong></div>
+          <div class="item-meta">${it.type}　更新：${it.updated}${it.note?' / '+it.note:''}</div>
         </div>
-        <div style="text-align:right">
-          <span class="badge ${badge}">残 ${it.qty}個</span>
-          ${it.note ? `<div style="font-size:11px;color:#718096;margin-top:4px">${it.note}</div>` : ''}
-        </div>
+        <span class="badge ${qb}">残 ${it.qty}</span>
       </div>
-      <div style="display:flex;gap:6px;margin-top:6px">
-        <button class="btn-sm btn-primary" onclick="quickQty('${id}',1)" style="background:#276749;color:#fff">+1</button>
-        <button class="btn-sm" onclick="quickQty('${id}',-1)" style="background:#C05621;color:#fff">-1</button>
-        <button class="btn-sm" onclick="deleteItem('${id}')" style="background:#EDF2F7;color:#718096">削除</button>
+      <div class="item-actions">
+        <button class="btn-sm" style="background:#276749;color:#fff" onclick="chQty('${id}',1)">+1</button>
+        <button class="btn-sm" style="background:#C05621;color:#fff" onclick="chQty('${id}',-1)">-1</button>
+        <button class="btn-sm" style="background:#EDF2F7;color:#718096" onclick="delItem('${id}')">削除</button>
       </div>
     </div>`;
   }).join('');
 }
 
-function quickQty(id, delta){
-  if(!db.items[id]) return;
-  db.items[id].qty = Math.max(0, (db.items[id].qty||0) + delta);
-  db.items[id].updatedAt = new Date().toLocaleDateString('ja-JP');
-  save(); renderList();
+function chQty(id,d){
+  if(!db.items[id])return;
+  db.items[id].qty=Math.max(0,(db.items[id].qty||0)+d);
+  db.items[id].updated=today();
+  save();renderList();
 }
 
-function deleteItem(id){
-  if(!confirm('「'+db.items[id].name+'」を削除しますか？')) return;
-  delete db.items[id]; save(); renderList(); renderSelects(); renderQR();
-}
-
-function manualUpdate(){
-  const itemId = document.getElementById('manual-item').value;
-  const locId = document.getElementById('manual-loc').value;
-  const qty = document.getElementById('manual-qty').value;
-  if(!itemId||!locId){ showMsg('manual-msg','物品と場所を選択してください',false); return; }
-  db.items[itemId].location = locId;
-  db.items[itemId].locationName = db.locations[locId].name;
-  if(qty!=='') db.items[itemId].qty = parseInt(qty)||0;
-  db.items[itemId].updatedAt = new Date().toLocaleDateString('ja-JP');
-  save(); renderList();
-  showMsg('manual-msg','「'+db.items[itemId].name+'」→「'+db.locations[locId].name+'」に更新しました',true);
-}
-
-function showPage(name){
-  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
-  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
-  document.getElementById('page-'+name).classList.add('active');
-  event.target.classList.add('active');
-  if(name==='list') renderList();
-  if(name==='qrgen') renderQR();
-  if(name==='scan') renderSelects();
+function delItem(id){
+  if(!confirm('「'+db.items[id].name+'」を削除しますか？'))return;
+  delete db.items[id];save();renderList();renderSelects();renderQR();
 }
 
 function renderQR(){
-  ['qr-items-grid','qr-locs-grid'].forEach(id=>{ const el=document.getElementById(id); if(el) el.innerHTML=''; });
-  const ig = document.getElementById('qr-items-grid');
+  const ig=document.getElementById('qr-items');
+  const lg=document.getElementById('qr-locs');
+  if(!ig||!lg)return;
+  ig.innerHTML='';lg.innerHTML='';
   Object.entries(db.items).forEach(([id,it])=>{
-    const div = document.createElement('div'); div.className='qr-card';
-    div.innerHTML=`<div id="qri-${id}"></div><p><strong>${it.name}</strong><br>${it.type}</p>`;
+    const div=document.createElement('div');div.className='qr-card';
+    div.innerHTML=`<div id="qi-${id}"></div><p>${it.name}</p>`;
     ig.appendChild(div);
-    setTimeout(()=>{ try{ new QRCode(document.getElementById('qri-'+id),{text:id,width:100,height:100,correctLevel:QRCode.CorrectLevel.M}); }catch(e){} },100);
+    setTimeout(()=>{try{new QRCode(document.getElementById('qi-'+id),{text:id,width:100,height:100,correctLevel:QRCode.CorrectLevel.M});}catch(e){}},100);
   });
-  const lg = document.getElementById('qr-locs-grid');
-  Object.entries(db.locations).forEach(([id,lo])=>{
-    const div = document.createElement('div'); div.className='qr-card';
-    div.innerHTML=`<div id="qrl-${id}"></div><p><strong>${lo.name}</strong></p>`;
+  Object.entries(db.locs).forEach(([id,lo])=>{
+    const div=document.createElement('div');div.className='qr-card';
+    div.innerHTML=`<div id="ql-${id}"></div><p>${lo.name}</p>`;
     lg.appendChild(div);
-    setTimeout(()=>{ try{ new QRCode(document.getElementById('qrl-'+id),{text:id,width:100,height:100,correctLevel:QRCode.CorrectLevel.M}); }catch(e){} },100);
+    setTimeout(()=>{try{new QRCode(document.getElementById('ql-'+id),{text:id,width:100,height:100,correctLevel:QRCode.CorrectLevel.M});}catch(e){}},100);
   });
 }
 
-function startScan(){
-  if(scanning) return;
-  scanning = true;
-  document.getElementById('scan-btn').style.display='none';
-  document.getElementById('stop-btn').style.display='block';
-  scanner = new Html5Qrcode("qr-reader");
-  scanner.start({facingMode:"environment"},{fps:10,qrbox:220},onScanSuccess,()=>{}).catch(err=>{
-    showMsg('scan-msg','カメラを起動できません。手動入力を使ってください。',false);
-    stopScan();
-  });
+function showPage(name,btn){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('page-'+name).classList.add('active');
+  btn.classList.add('active');
+  if(name==='list')renderList();
+  if(name==='qrgen')renderQR();
+  if(name==='scan')renderSelects();
 }
 
-function stopScan(){
-  scanning = false;
-  document.getElementById('scan-btn').style.display='block';
-  document.getElementById('stop-btn').style.display='none';
-  if(scanner){ scanner.stop().catch(()=>{}); scanner=null; }
-}
-
-function onScanSuccess(decoded){
-  if(scanState.step===0){
-    if(db.items[decoded]){
-      scanState.itemId = decoded;
-      scanState.step = 1;
-      const it = db.items[decoded];
-      document.getElementById('scan-item-result').style.display='block';
-      document.getElementById('scan-item-result').innerHTML=`物品を読みました：<strong>${it.name}</strong>（${it.type}）<br>現在の場所：${it.locationName}`;
-      document.getElementById('scan-step').textContent='ステップ2：置く場所のQRコードを読んでください';
-    } else if(db.locations[decoded]){
-      showMsg('scan-msg','先に物品のQRを読んでください',false);
-    } else {
-      showMsg('scan-msg','登録されていないQRコードです',false);
-    }
-  } else if(scanState.step===1){
-    if(db.locations[decoded]){
-      scanState.locId = decoded;
-      scanState.step = 2;
-      stopScan();
-      const lo = db.locations[decoded];
-      document.getElementById('scan-loc-result').style.display='block';
-      document.getElementById('scan-loc-result').innerHTML=`場所を読みました：<strong>${lo.name}</strong>`;
-      document.getElementById('btn-confirm').style.display='block';
-      document.getElementById('btn-reset').style.display='block';
-      document.getElementById('scan-step').textContent='確認してボタンを押してください';
-    } else {
-      showMsg('scan-msg','場所QRを読んでください（物品QRではありません）',false);
-    }
-  }
-}
-
-function confirmScan(){
-  const it = db.items[scanState.itemId];
-  const lo = db.locations[scanState.locId];
-  it.location = scanState.locId;
-  it.locationName = lo.name;
-  it.updatedAt = new Date().toLocaleDateString('ja-JP');
-  save();
-  showMsg('scan-msg','「'+it.name+'」を「'+lo.name+'」に記録しました！',true);
-  resetScan();
-}
-
-function resetScan(){
-  scanState = {step:0, itemId:null, locId:null};
-  document.getElementById('scan-item-result').style.display='none';
-  document.getElementById('scan-loc-result').style.display='none';
-  document.getElementById('btn-confirm').style.display='none';
-  document.getElementById('btn-reset').style.display='none';
-  document.getElementById('scan-step').textContent='ステップ1：物品のQRコードを読んでください';
-}
-
-updateStats(); renderSelects(); renderList();
+updateStats();renderList();renderSelects();
 </script>
 </body>
 </html>
